@@ -20,8 +20,8 @@
 
         .card {
             background: white;
-            width: 430px;
-            /* ✅ bigger white box */
+            width: min(380px, 90vw);
+            /* Responsive width for better fit */
             padding: 55px 35px 65px;
             border-radius: 28px;
             text-align: center;
@@ -46,8 +46,21 @@
             border-radius: 999px;
             cursor: pointer;
             position: absolute;
-            transition: transform 0.35s cubic-bezier(.25, 1.3, .5, 1);
+            transition: transform 0.35s cubic-bezier(.25, 1.3, .5, 1), background-color 0.2s;
             -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+            /* Optimize animations */
+        }
+
+        button:focus {
+            outline: 2px solid #ff4d6d;
+            /* Accessibility: focus indicator */
+            outline-offset: 2px;
+        }
+
+        button:hover {
+            background-color: rgba(255, 77, 109, 0.9);
+            /* Subtle hover for desktop */
         }
 
         #yesBtn {
@@ -71,11 +84,13 @@
         }
 
         #ryanGif {
-            width: 330px;
-            /* ✅ bigger GIF */
+            width: min(280px, 80vw);
+            /* Responsive GIF size */
             border-radius: 22px;
             transition: transform 0.7s ease;
             transform: scale(1);
+            will-change: transform;
+            /* Optimize scaling */
         }
 
         /* Message */
@@ -101,7 +116,7 @@
             }
         }
 
-        /* Floating hearts (NO NAME) */
+        /* Floating hearts */
         .heart {
             position: fixed;
             width: 80px;
@@ -110,6 +125,8 @@
             transform: rotate(-45deg);
             animation: floatUp 3s ease forwards;
             pointer-events: none;
+            will-change: transform, opacity;
+            /* Optimize heart animation */
         }
 
         .heart::before,
@@ -141,6 +158,21 @@
                 opacity: 0;
             }
         }
+
+        /* Media query for very small screens */
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 22px;
+            }
+
+            #loveMsg {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 40px 25px 50px;
+            }
+        }
     </style>
 </head>
 
@@ -150,25 +182,27 @@
         <h2>Smritika, Willst du mein Valentin sein?</h2>
 
         <div class="buttons" id="buttons">
-            <button id="yesBtn">Ja</button>
-            <button id="noBtn">Nein</button>
+            <button id="yesBtn" aria-label="Ja, ich akzeptiere die Einladung">Ja</button>
+            <button id="noBtn" aria-label="Nein, ich lehne ab" role="button">Nein</button>
         </div>
 
         <!-- GIF -->
         <div id="gifBox">
-            <img id="ryanGif" src="3sj9.gif" alt="Ryan Gosling">
+            <img id="ryanGif" src="3sj9.gif" alt="Ryan Gosling GIF als Überraschung" loading="lazy">
         </div>
 
         <!-- MESSAGE -->
-        <div id="loveMsg">Hoina Hola</div>
+        <div id="loveMsg" aria-live="polite">Hoina Hola</div>
     </div>
 
     <!-- Music -->
     <audio id="music" preload="auto">
         <source src="noevdv_ want u - slowed  reverb [official lyric video].mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
     </audio>
 
     <script>
+        // Get elements
         const yesBtn = document.getElementById("yesBtn");
         const noBtn = document.getElementById("noBtn");
         const buttons = document.getElementById("buttons");
@@ -181,48 +215,80 @@
         let x = 0;
         let y = 0;
 
-        // Smooth NO button
+        // Function to move the "No" button smoothly, keeping it within bounds
         function moveNo() {
             scale *= 0.92;
-            x = (Math.random() * 180) - 90;
-            y = (Math.random() * 90) - 45;
+            // Limit movement to prevent going off-screen
+            const maxX = window.innerWidth * 0.1; // 10% of screen width
+            const maxY = window.innerHeight * 0.05; // 5% of screen height
+            x = Math.max(-maxX, Math.min(maxX, (Math.random() * maxX * 2) - maxX));
+            y = Math.max(-maxY, Math.min(maxY, (Math.random() * maxY * 2) - maxY));
             noBtn.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
         }
 
+        // Event listeners for "No" button
         noBtn.addEventListener("mouseover", moveNo);
         noBtn.addEventListener("touchstart", moveNo);
 
-        // YES button
+        // Function to handle "Yes" button click
         yesBtn.addEventListener("click", () => {
+            // Remove buttons
             buttons.remove();
 
+            // Show GIF
             gifBox.style.display = "block";
 
-            // Scale up GIF
+            // Scale up GIF after a short delay
             setTimeout(() => {
                 gif.style.transform = "scale(1.3)";
             }, 100);
 
-            msg.style.display = "block";   // fade-in + stays forever
+            // Show message
+            msg.style.display = "block";
 
+            // Play music with error handling
             music.currentTime = 0;
-            music.play();
+            const playPromise = music.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // Music started successfully
+                }).catch(error => {
+                    console.warn("Music playback failed:", error);
+                    // Optionally, show a user-friendly message or fallback
+                });
+            }
 
+            // Launch hearts
             launchHearts();
         });
 
-        // Hearts (no text)
+        // Function to create and animate floating hearts
         function launchHearts() {
-            for (let i = 0; i < 22; i++) {
+            const heartCount = 22;
+            for (let i = 0; i < heartCount; i++) {
                 const heart = document.createElement("div");
                 heart.className = "heart";
-                heart.style.left = Math.random() * window.innerWidth + "px";
+                heart.style.left = Math.random() * (window.innerWidth - 80) + "px"; // Avoid edges
                 heart.style.top = window.innerHeight - 20 + "px";
 
                 document.body.appendChild(heart);
-                setTimeout(() => heart.remove(), 3000);
+                // Remove heart after animation
+                setTimeout(() => {
+                    if (heart.parentNode) {
+                        heart.parentNode.removeChild(heart);
+                    }
+                }, 3000);
             }
         }
+
+        // Optional: Handle window resize for better responsiveness
+        window.addEventListener("resize", () => {
+            // Reset "No" button position if needed
+            scale = 1;
+            x = 0;
+            y = 0;
+            noBtn.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        });
     </script>
 
 </body>
