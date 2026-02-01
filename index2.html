@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #f8c8dc, #ffd6e8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overflow: hidden;
+        }
+
+        .card {
+            background: white;
+            width: 430px;
+            /* ✅ bigger white box */
+            padding: 55px 35px 65px;
+            border-radius: 28px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
+            position: relative;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin-bottom: 40px;
+        }
+
+        .buttons {
+            position: relative;
+            height: 150px;
+        }
+
+        button {
+            padding: 18px 40px;
+            font-size: 20px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            position: absolute;
+            transition: transform 0.35s cubic-bezier(.25, 1.3, .5, 1);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #yesBtn {
+            background: #ff4d6d;
+            color: white;
+            left: 40px;
+            bottom: 10px;
+        }
+
+        #noBtn {
+            background: #e0e0e0;
+            color: #333;
+            right: 40px;
+            bottom: 10px;
+        }
+
+        /* GIF */
+        #gifBox {
+            display: none;
+            margin-top: 30px;
+        }
+
+        #ryanGif {
+            width: 330px;
+            /* ✅ bigger GIF */
+            border-radius: 22px;
+            transition: transform 0.7s ease;
+            transform: scale(1);
+        }
+
+        /* Message */
+        #loveMsg {
+            display: none;
+            margin-top: 28px;
+            font-size: 28px;
+            font-weight: 800;
+            color: #ff4d6d;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Floating hearts (NO NAME) */
+        .heart {
+            position: fixed;
+            width: 80px;
+            height: 70px;
+            background: #ff4d6d;
+            transform: rotate(-45deg);
+            animation: floatUp 3s ease forwards;
+            pointer-events: none;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: "";
+            width: 80px;
+            height: 70px;
+            background: #ff4d6d;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart::before {
+            top: -40px;
+        }
+
+        .heart::after {
+            left: 40px;
+        }
+
+        @keyframes floatUp {
+            from {
+                transform: translateY(0) rotate(-45deg) scale(1);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-200px) rotate(-45deg) scale(1.6);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Smritika, Willst du mein Valentin sein?</h2>
+
+        <div class="buttons" id="buttons">
+            <button id="yesBtn">Ja</button>
+            <button id="noBtn">Nein</button>
+        </div>
+
+        <!-- GIF -->
+        <div id="gifBox">
+            <img id="ryanGif" src="3sj9.gif" alt="Ryan Gosling">
+        </div>
+
+        <!-- MESSAGE -->
+        <div id="loveMsg">Hoina Hola</div>
+    </div>
+
+    <!-- Music -->
+    <audio id="music" preload="auto">
+        <source src="noevdv_ want u - slowed  reverb [official lyric video].mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const yesBtn = document.getElementById("yesBtn");
+        const noBtn = document.getElementById("noBtn");
+        const buttons = document.getElementById("buttons");
+        const gifBox = document.getElementById("gifBox");
+        const gif = document.getElementById("ryanGif");
+        const msg = document.getElementById("loveMsg");
+        const music = document.getElementById("music");
+
+        let scale = 1;
+        let x = 0;
+        let y = 0;
+
+        // Smooth NO button
+        function moveNo() {
+            scale *= 0.92;
+            x = (Math.random() * 180) - 90;
+            y = (Math.random() * 90) - 45;
+            noBtn.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        }
+
+        noBtn.addEventListener("mouseover", moveNo);
+        noBtn.addEventListener("touchstart", moveNo);
+
+        // YES button
+        yesBtn.addEventListener("click", () => {
+            buttons.remove();
+
+            gifBox.style.display = "block";
+
+            // Scale up GIF
+            setTimeout(() => {
+                gif.style.transform = "scale(1.3)";
+            }, 100);
+
+            msg.style.display = "block";   // fade-in + stays forever
+
+            music.currentTime = 0;
+            music.play();
+
+            launchHearts();
+        });
+
+        // Hearts (no text)
+        function launchHearts() {
+            for (let i = 0; i < 22; i++) {
+                const heart = document.createElement("div");
+                heart.className = "heart";
+                heart.style.left = Math.random() * window.innerWidth + "px";
+                heart.style.top = window.innerHeight - 20 + "px";
+
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 3000);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
